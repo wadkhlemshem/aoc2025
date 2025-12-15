@@ -1,6 +1,5 @@
 use std::{fmt::Display, str::FromStr};
 
-use serde::Deserialize;
 use strum::EnumString;
 
 fn main() -> color_eyre::Result<()> {
@@ -23,7 +22,7 @@ fn main() -> color_eyre::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Deserialize, EnumString, strum::Display)]
+#[derive(Debug, EnumString, strum::Display)]
 enum Direction {
     #[strum(serialize = "L")]
     Left,
@@ -43,7 +42,7 @@ impl TryFrom<char> for Direction {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 struct Rotation {
     direction: Direction,
     degrees: i32,
@@ -89,11 +88,11 @@ impl Position {
         self.0 = new_pos as u8;
 
         let full_rotations = rotation.degrees as u64 / 100;
-        let hit_zero = old_pos != 0
-            && match rotation.direction {
-                Direction::Left => new_pos > old_pos || new_pos == 0,
-                Direction::Right => new_pos < old_pos || new_pos == 0,
-            };
+        let crossed_zero = match rotation.direction {
+            Direction::Left => new_pos > old_pos,
+            Direction::Right => new_pos < old_pos,
+        };
+        let hit_zero = old_pos != 0 && crossed_zero || new_pos == 0;
 
         full_rotations + hit_zero as u64
     }
